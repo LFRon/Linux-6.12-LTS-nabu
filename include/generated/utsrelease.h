@@ -1,1 +1,1 @@
-#define UTS_RELEASE "6.12.43-sm8150-g016a2e1b7c73-dirty"
+#define UTS_RELEASE "6.12.43-sm8150-g2042f8a69823-dirty"
