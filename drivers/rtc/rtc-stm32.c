@@ -1159,6 +1159,10 @@ static int stm32_rtc_probe(struct platform_device *pdev)
 	if (ret)
 		goto err;
 
+	ret = devm_pm_set_wake_irq(&pdev->dev, rtc->irq_alarm);
+	if (ret)
+		goto err;
+
 	platform_set_drvdata(pdev, rtc);
 
 	rtc->rtc_dev = devm_rtc_device_register(&pdev->dev, pdev->name,

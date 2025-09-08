@@ -267,7 +267,7 @@ static int mpfs_rtc_probe(struct platform_device *pdev)
 	dev_info(&pdev->dev, "prescaler set to: %lu\n", prescaler);
 
 	devm_device_init_wakeup(&pdev->dev);
-	ret = dev_pm_set_wake_irq(&pdev->dev, wakeup_irq);
+	ret = devm_pm_set_wake_irq(&pdev->dev, wakeup_irq);
 	if (ret)
 		dev_err(&pdev->dev, "failed to enable irq wake\n");
 
