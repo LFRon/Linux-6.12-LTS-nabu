@@ -1155,7 +1155,7 @@ static int stm32_rtc_probe(struct platform_device *pdev)
 	if (ret)
 		goto err;
 
-	ret = dev_pm_set_wake_irq(&pdev->dev, rtc->irq_alarm);
+	ret = devm_device_init_wakeup(&pdev->dev);
 	if (ret)
 		goto err;
 
