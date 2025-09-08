@@ -1,0 +1,105 @@
+From 5f4813c5d4ce7496674547fc8d15b84d541448ae Mon Sep 17 00:00:00 2001
+From: Nicola Guerrera <guerrera.nicola@gmail.com>
+Date: Tue, 5 Aug 2025 18:38:27 +0200
+Subject: [PATCH] 1/1] Add other pm-wakeup nodes backport from Linux-6.16,我发现这节点貌似别的.c文件也要用到否则会开机黑屏,于是再加个补丁
+---
+ arch/arm64/configs/sm8150.config | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/rtc/rtc-ab8500.c b/drivers/rtc/rtc-ab8500.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-ab8500.c
++++ b/drivers/rtc/rtc-ab8500.c
+@@ -377,3 +377,3 @@ if (err < 0)
+ 
+-dev_pm_set_wake_irq(&pdev->dev, irq);
++devm_pm_set_wake_irq(&pdev->dev, irq);
+ platform_set_drvdata(pdev, rtc);
+diff --git a/drivers/rtc/rtc-ds1343.c b/drivers/rtc/rtc-ds1343.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-ds1343.c
++++ b/drivers/rtc/rtc-ds1343.c
+@@ -429,3 +429,3 @@ } else {
+ 			device_init_wakeup(&spi->dev, true);
+-			dev_pm_set_wake_irq(&spi->dev, spi->irq);
++			devm_pm_set_wake_irq(&pdev->dev, irq);
+ 		}
+diff --git a/drivers/rtc/rtc-mpfs.c b/drivers/rtc/rtc-mpfs.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-mpfs.c
++++ b/drivers/rtc/rtc-mpfs.c
+@@ -267,5 +267,5 @@ writel(prescaler, rtcdev->base + PRESCALER_REG);
+ 	dev_info(&pdev->dev, "prescaler set to: %lu\n", prescaler);
+ 
+-	device_init_wakeup(&pdev->dev, true);
+-	ret = dev_pm_set_wake_irq(&pdev->dev, wakeup_irq);
++	devm_device_init_wakeup(&pdev->dev);
++	ret = devm_pm_set_wake_irq(&pdev->dev, wakeup_irq);
+ 	if (ret)
+diff --git a/drivers/rtc/rtc-nxp-bbnsm.c b/drivers/rtc/rtc-nxp-bbnsm.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-nxp-bbnsm.c
++++ b/drivers/rtc/rtc-nxp-bbnsm.c
+@@ -190,6 +190,13 @@ /* clear all the pending events */
+ 	regmap_write(bbnsm->regmap, BBNSM_EVENTS, 0x7A);
+ 
+-	device_init_wakeup(&pdev->dev, true);
+-	dev_pm_set_wake_irq(&pdev->dev, bbnsm->irq);
++	ret = devm_device_init_wakeup(&pdev->dev);
++	if (ret)
++		dev_err(&pdev->dev, "failed to init wakeup, %d\n", ret);
++
++	ret = devm_pm_set_wake_irq(&pdev->dev, bbnsm->irq);
++	if (ret)
++		dev_err(&pdev->dev, "failed to set wake irq, %d\n", ret);
+ 
+ 	ret = devm_request_irq(&pdev->dev, bbnsm->irq, bbnsm_rtc_irq_handler,
+diff --git a/drivers/rtc/rtc-pl031.c b/drivers/rtc/rtc-pl031.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-pl031.c
++++ b/drivers/rtc/rtc-pl031.c
+@@ -374,4 +374,4 @@ if (adev->irq[0]) {
+ 		if (ret)
+ 			goto out;
+-		dev_pm_set_wake_irq(&adev->dev, adev->irq[0]);
++		devm_pm_set_wake_irq(&adev->dev, adev->irq[0]);
+ 	}
+diff --git a/drivers/rtc/rtc-pm8xxx.c b/drivers/rtc/rtc-pm8xxx.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-pm8xxx.c
++++ b/drivers/rtc/rtc-pm8xxx.c
+@@ -524,4 +524,4 @@ if (rc)
+ 		return rc;
+ 
+-	rc = dev_pm_set_wake_irq(&pdev->dev, rtc_dd->alarm_irq);
++	rc = devm_pm_set_wake_irq(&pdev->dev, rtc_dd->alarm_irq);
+ 	if (rc)
+diff --git a/drivers/rtc/rtc-stm32.c b/drivers/rtc/rtc-stm32.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/rtc/rtc-stm32.c
++++ b/drivers/rtc/rtc-stm32.c
+@@ -1144,9 +1144,9 @@ if (rtc->irq_alarm <= 0) {
+ 	}
+ 
+-	ret = device_init_wakeup(&pdev->dev, true);
++	ret = devm_device_init_wakeup(&pdev->dev);	
+ 	if (ret)
+ 		goto err;
+ 
+-	ret = dev_pm_set_wake_irq(&pdev->dev, rtc->irq_alarm);
++	ret = devm_pm_set_wake_irq(&pdev->dev, rtc->irq_alarm);
+ 	if (ret)
+ 		goto err;
+diff --git a/drivers/watchdog/stm32_iwdg.c b/drivers/watchdog/stm32_iwdg.c
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/watchdog/stm32_iwdg.c
++++ b/drivers/watchdog/stm32_iwdg.c
+@@ -524,4 +524,4 @@ if (rc)
+ 		return rc;
+ 
+-	rc = dev_pm_set_wake_irq(&pdev->dev, rtc_dd->alarm_irq);
++	rc = devm_pm_set_wake_irq(&pdev->dev, rtc_dd->alarm_irq);
+ 	if (rc)
+-- 
+2.51.0
+

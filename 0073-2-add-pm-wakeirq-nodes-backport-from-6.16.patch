@@ -1,0 +1,26 @@
+From 5f4813c5d4ce7496674547fc8d15b84d541448ae Mon Sep 17 00:00:00 2001
+From: Nicola Guerrera <guerrera.nicola@gmail.com>
+Date: Tue, 5 Aug 2025 18:38:27 +0200
+Subject: [PATCH 2/3] 2-Add wakeirq nodes backport from Linux-6.16
+
+---
+ arch/arm64/configs/sm8150.config | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -103,4 +103,9 @@ void dev_pm_clear_wake_irq(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_clear_wake_irq);
+ 
++static void devm_pm_clear_wake_irq(void *dev)
++{
++	dev_pm_clear_wake_irq(dev);
++}
++
+ /**
+-- 
+2.51.0
+

@@ -1,0 +1,44 @@
+From 5f4813c5d4ce7496674547fc8d15b84d541448ae Mon Sep 17 00:00:00 2001
+From: LFRon <ronforever@outlook.com>
+Date: Tue, 5 Aug 2025 18:38:27 +0200
+
+Subject: [PATCH 3/3] 3-Add wakeirq nodes backport from Linux-6.16
+
+---
+ include/linux/pm_wakeirq.h | 懒得写加了多少行 ++++++++
+ 1 file changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/pm_wakeirq.h b/include/linux/pm_wakeirq.h
+index e4e6fb838f81..4be88628474f 100644
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -108,5 +108,26 @@ static void devm_pm_clear_wake_irq(void *dev)
+ 	dev_pm_clear_wake_irq(dev);
+ }
+ 
++/**
++ * devm_pm_set_wake_irq - device-managed variant of dev_pm_set_wake_irq
++ * @dev: Device entry
++ * @irq: Device IO interrupt
++ *
++ *
++ * Attach a device IO interrupt as a wake IRQ, same with dev_pm_set_wake_irq,
++ * but the device will be auto clear wake capability on driver detach.
++ */
++int devm_pm_set_wake_irq(struct device *dev, int irq)
++{
++	int ret;
++
++	ret = dev_pm_set_wake_irq(dev, irq);
++	if (ret)
++		return ret;
++
++	return devm_add_action_or_reset(dev, devm_pm_clear_wake_irq, dev);
++}
++EXPORT_SYMBOL_GPL(devm_pm_set_wake_irq);
++ 
+ /**
+  * handle_threaded_wake_irq - Handler for dedicated wake-up interrupts
+-- 
+2.51.0
+

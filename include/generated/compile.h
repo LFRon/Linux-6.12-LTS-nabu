@@ -1,0 +1,5 @@
+#define UTS_MACHINE		"aarch64"
+#define LINUX_COMPILE_BY	"mozixun"
+#define LINUX_COMPILE_HOST	"Mozixun-PC"
+#define LINUX_COMPILER		"aarch64-linux-gnu-gcc (Debian 14.3.0-5) 14.3.0, GNU ld (GNU Binutils for Debian) 2.45"
+#define GIT_COMMITID		"016a2e1b7c73"
